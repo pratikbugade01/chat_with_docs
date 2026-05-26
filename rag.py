@@ -11,6 +11,9 @@ import os
 
 load_dotenv()
 apikey = os.getenv("GROQ_API_KEY")
+
+if not apikey:
+    raise ValueError("GROQ_API_KEY not found in environment variables")
     
 
 def get_pdf(name_of_pdf):
@@ -77,16 +80,16 @@ def load_pdf(NameOfPdf):
 
     chunks = split_document(pdf)
 
-    retriver = create_retriever(chunks)
+    retriever = create_retriever(chunks)
 
     llm = initialize_llm()
 
     prompt = create_prompt()
 
-    chain = build_chain(retriver,prompt,llm)
+    chain = build_chain(retriever,prompt,llm)
 
     return chain
 
-def answer(qustion,chain):
-    answer = chain.invoke(qustion)
-    return answer
+def answer(question,chain):
+    result = chain.invoke(question)
+    return result

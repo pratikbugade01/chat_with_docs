@@ -6,12 +6,12 @@ BASE_URL = "http://127.0.0.1:8000"
 
 st.set_page_config(page_title="Document Based Question Answering Chatbot.", layout="centered")
 
-st.title("🎥 Chat With Documents.")
+st.title("📄 Chat With Documents.")
 st.write("Ask questions on your document.")
 
 
 doc = st.file_uploader("Upload your document")
-typeofdoc = st.selectbox(label="select Document type",options=["PDF","Text","doc"])
+# "NOT USED" typeofdoc = st.selectbox(label="select Document type",options=["PDF","Text","doc"])
 
 if st.button("Load Document"):
     if doc:
@@ -47,14 +47,15 @@ if st.session_state.get("loaded", False):
     if st.button("Get Answer"):
         if question:
             with st.spinner("Thinking..."):
-                response = requests.post(
-                    f"{BASE_URL}/ask",
-                    json={"question": question}
-                )
-
-                answer = response.json()["answer"]
-
-                st.markdown("### 💡 Answer:")
-                st.write(answer)
-        else:
-            st.warning("Please enter a question")
+                try:                                    
+                    response = requests.post(
+                        f"{BASE_URL}/ask",
+                        json={"question": question}
+                    )
+                    answer = response.json()["answer"]
+                    st.markdown("### 💡 Answer:")
+                    st.write(answer)
+                except requests.exceptions.ConnectionError:                          
+                    st.error("Cannot connect to backend. Make sure FastAPI is running.")
+                except Exception as e:
+                    st.error(f"Something went wrong: {e}")
