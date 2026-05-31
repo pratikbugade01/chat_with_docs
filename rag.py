@@ -22,18 +22,31 @@ def get_pdf(name_of_pdf):
     return pdf
 
 def split_document(pdf):
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1500,
+        chunk_overlap=300,
+        separators=["\n\n", "\n", ".", " ", ""]
+        )
+    
     chunks = splitter.split_documents(pdf)
+    print(chunks)
     return chunks
 
 def create_retriever(chunks):
     embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2",
+    model_name="sentence-transformers/all-mpnet-base-v2",
     )
 
     vector_store = FAISS.from_documents(chunks, embeddings)
 
-    retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": 6})
+    retriever = vector_store.as_retriever(
+        search_type="mmr",
+        search_kwargs={
+            "k": 6,           
+            "fetch_k": 15,     
+            "lambda_mult": 0.7  
+            }
+        )
     return retriever
 
 
@@ -49,10 +62,12 @@ def create_prompt():
         template="""
         You are a helpful assistant.
         Answer ONLY from the provided context.
+        Be thorough and include ALL relevant details from the context.
         If the context is insufficient, just say you don't know.
 
         {context}
         Question: {question}
+        Answer in a clear, structured and detailed manner:
         """,
         input_variables = ['context', 'question']
     )
@@ -76,6 +91,7 @@ def build_chain(retriever,prompt,llm):
 
 
 def load_pdf(NameOfPdf):
+    
     pdf = get_pdf(NameOfPdf)
 
     chunks = split_document(pdf)
@@ -90,6 +106,9 @@ def load_pdf(NameOfPdf):
 
     return chain
 
-def answer(question,chain):
-    result = chain.invoke(question)
-    return result
+def answer(question, chain):
+    try:
+        result = chain.invoke(question)
+        return result
+    except Exception as e:
+        return f"Error generating answer: {str(e)}"
