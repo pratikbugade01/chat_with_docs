@@ -29,12 +29,11 @@ def split_document(pdf):
         )
     
     chunks = splitter.split_documents(pdf)
-    print(chunks)
     return chunks
 
 def create_retriever(chunks):
     embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-mpnet-base-v2",
+    model_name="sentence-transformers/all-MiniLM-L6-v2",
     )
 
     vector_store = FAISS.from_documents(chunks, embeddings)
@@ -42,7 +41,7 @@ def create_retriever(chunks):
     retriever = vector_store.as_retriever(
         search_type="mmr",
         search_kwargs={
-            "k": 6,           
+            "k": 5,           
             "fetch_k": 15,     
             "lambda_mult": 0.7  
             }
@@ -60,8 +59,7 @@ def initialize_llm():
 def create_prompt():
     prompt = PromptTemplate(
         template="""
-        You are a helpful assistant.
-        Answer ONLY from the provided context.
+        You are a helpful assistant that answers STRICTLY from the provided context.
         Be thorough and include ALL relevant details from the context.
         If the context is insufficient, just say you don't know.
 
@@ -91,7 +89,7 @@ def build_chain(retriever,prompt,llm):
 
 
 def load_pdf(NameOfPdf):
-    
+
     pdf = get_pdf(NameOfPdf)
 
     chunks = split_document(pdf)
