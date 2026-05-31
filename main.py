@@ -9,6 +9,7 @@ import tempfile, os
 
 
 limiter = Limiter(key_func=get_remote_address)
+MAX_FILE_SIZE = 20 * 1024 * 1024
 app = FastAPI()
 app.state.limiter = limiter
 chain = None
@@ -40,9 +41,15 @@ async def upload_pdf(request: Request, file: UploadFile = File(...)):
 
     if not file.filename.endswith(".pdf"):
         return {"success": False, "message": "Only PDF files are allowed!"}
+    
+    contents = await file.read()
+
+    if len(contents) > MAX_FILE_SIZE:
+        return {"success": False, "message": "File too large. Maximum size is 20MB."}
+
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-        tmp.write(await file.read())
+        tmp.write(contents)
         tmp_path = tmp.name
 
     chain = load_pdf(tmp_path)
@@ -53,11 +60,11 @@ async def upload_pdf(request: Request, file: UploadFile = File(...)):
 
 @app.post("/ask")
 @limiter.limit("10/minute")
-def ask_question(request: Request, qustion: QuestionRequest):
+def ask_question(request: Request, question: QuestionRequest):
     global chain
 
     if chain is None:
         return {"answer": "Please upload a PDF first."}
 
-    result = answer(qustion.question, chain)
+    result = answer(question.question, chain)
     return {"answer": result}
