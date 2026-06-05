@@ -1,0 +1,14 @@
+.git
+.gitignore
+.vscode
+venv
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+*.pdf
+README.md
+testing.ipynb
+frontend.py

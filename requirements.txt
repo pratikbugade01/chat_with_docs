@@ -3,6 +3,11 @@ langchain-text-splitters
 langchain-huggingface
 langchain-groq
 langchain-core
+fastapi
+uvicorn==0.30.6
+slowapi
+python-dotenv
+python-multipart
 faiss-cpu
 sentence-transformers
 pypdf
