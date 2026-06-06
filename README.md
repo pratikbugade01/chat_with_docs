@@ -216,6 +216,15 @@ RAG pipeline evaluated using **RAGAS** on a LangChain research paper across 3 qu
 
 ---
 
+## ⚠️ Limitations
+
+- **Text-based PDFs only** — the chatbot extracts text using `PyPDFLoader`. Image-based or scanned PDFs (where content is stored as images) are not supported. For scanned PDFs, an OCR tool like `pytesseract` would be needed.
+- **Max file size: 20MB** — larger files will be rejected by the backend.
+- **No conversation memory** — each question is answered independently without remembering previous questions in the same session.
+- **Groq free tier rate limits** — the backend uses Groq's free tier which has token-per-day limits. Heavy usage may result in temporary rate limit errors.
+
+---
+
 ## 🔑 Environment Variables
 
 | Variable | Description |
